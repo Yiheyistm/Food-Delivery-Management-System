@@ -27,6 +27,81 @@ The system consists of eight microservices communicating via REST for synchronou
 
 Architecture sketch link: (add link here)
 
+### Architecture Diagram
+
+```mermaid
+flowchart LR
+	subgraph Clients
+		CUST[Customer App]
+	end
+
+	subgraph Edge
+		NGINX[Nginx / Ingress<br/>Load Balancer]
+	end
+
+	CUST --> NGINX
+
+	subgraph Core[Core Services]
+		USER[User Service]
+		PRODUCT[Product Service]
+		CART[Cart Service]
+		ORDER[Order Service]
+		PAYMENT[Payment Service]
+		DELIVERY[Delivery Service]
+		NOTIFY[Notification Service]
+		ANALYTICS[Analytics Service]
+	end
+
+	subgraph Data[Data Stores]
+		MYSQL[(MySQL Cluster)]
+		REDIS[(Redis Cache)]
+	end
+
+	subgraph Infra[Messaging & Orchestration]
+		KAFKA[(Kafka Broker)]
+		K8S[Kubernetes]
+	end
+
+	NGINX --> USER
+	NGINX --> PRODUCT
+	NGINX --> CART
+	NGINX --> ORDER
+	NGINX --> PAYMENT
+	NGINX --> DELIVERY
+
+	USER --> MYSQL
+	PRODUCT --> MYSQL
+	CART --> REDIS
+	ORDER --> MYSQL
+	PAYMENT --> MYSQL
+	DELIVERY --> MYSQL
+	NOTIFY --> MYSQL
+	ANALYTICS --> MYSQL
+
+	CART --> ORDER
+	USER --> ORDER
+	PRODUCT --> CART
+	ORDER --> PAYMENT
+	PAYMENT --> ORDER
+	ORDER --> DELIVERY
+	DELIVERY --> ORDER
+
+	ORDER -- events --> KAFKA
+	PAYMENT -- events --> KAFKA
+	DELIVERY -- events --> KAFKA
+	NOTIFY -- consumes --> KAFKA
+	ANALYTICS -- consumes --> KAFKA
+
+	K8S --- USER
+	K8S --- PRODUCT
+	K8S --- CART
+	K8S --- ORDER
+	K8S --- PAYMENT
+	K8S --- DELIVERY
+	K8S --- NOTIFY
+	K8S --- ANALYTICS
+```
+
 ## Key Technologies
 
 - Language: Node.js
